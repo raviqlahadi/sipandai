@@ -7,8 +7,11 @@ class User extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        //Do your magic here
+        //check if user loged in
         $this->check_access();
+
+        //check if it is admin root
+        $this->check_privileges();
 
         $this->load->library('form_template');
         $this->load->library('table_template');
@@ -27,18 +30,22 @@ class User extends MY_Controller
 
         //page config
         $limit = $this->input->get('limit');
-        $limit_per_page = ($limit != null && $limit != '') ? $limit : 2;
+        $limit_per_page = ($limit != null && $limit != '') ? $limit : 10;
         $page = ($this->uri->segment(3)) ? ($this->uri->segment(3) - 1) : 0;
         $start_record = $page * $limit_per_page;        
         
         // table props, change this base on table props
-        $data['table_head'] = array('username','email','level');
+        $data['table_head'] = array(
+            'username' => 'Nama User',
+            'email' => 'Email',
+            'level' => 'Level User'
+        );
 
         $search = ($this->input->get('search') != null ) ? $this->input->get('search') : false ;
         
 
         if($search){
-            $fetch['like'] = array('name'=>array('username','email'), 'key'=>$search);
+            $fetch['like'] = array('name'=>array('username' => '','email'), 'key'=>$search);
         }
 
         $fetch['select'] = array('id','username', 'email');
@@ -109,6 +116,11 @@ class User extends MY_Controller
         $group_data = $this->m_groups->fetch(array('select'=>array('id','name')));
         $data['group_select'] = $group_data;
 
+        //select option
+        $this->load->model('m_agencies');
+        $agencies_data = $this->m_agencies->fetch(array('select' => array('id', 'name')));
+        $data['agencies_select'] = $agencies_data;
+
 
         if ($_POST) {
             $this->form_validation_rules();
@@ -129,6 +141,7 @@ class User extends MY_Controller
     public function add($post_data)
     {
         if(array_key_exists('password_confirm', $post_data)) unset($post_data['password_confirm']);
+        $post_data['password'] = password_hash($post_data['password'], PASSWORD_DEFAULT);
         $insert = $this->m_users->add($post_data);
         if ($insert) {
             $this->session->set_flashdata('alert', $this->alert->set_alert('info', 'Data berhasil di masukan ke database'));
@@ -167,6 +180,12 @@ class User extends MY_Controller
         $group_data = $this->m_groups->fetch(array('select' => array('id', 'name')));
         $data['group_select'] = $group_data;
 
+        //select option
+        $this->load->model('m_agencies');
+        $agencies_data = $this->m_agencies->fetch(array('select' => array('id', 'name')));
+        $data['agencies_select'] = $agencies_data;
+
+
         //get current data
         $current_data = $this->m_users->getWhere(array('id'=>$id));
         if(count($current_data)==0){
@@ -191,9 +210,58 @@ class User extends MY_Controller
         $this->load->view('index',$data);
     }
 
+    public function password($id)
+    {
+        //checkk if id is exist
+        if ($id == null) {
+            $this->session->set_flashdata('alert', $this->alert->set_alert('danger', 'Anda perlu memilih data yang akan di edit'));
+            redirect($this->url);
+        }
+
+        //breadcrumbs config
+        $this->breadcrumbs->push('User', '/user');
+        $this->breadcrumbs->push('Edit Password', '/password');
+        $this->breadcrumbs->unshift('Admin', '/');
+
+        //page props
+        $data['breadcrumbs'] = $this->breadcrumbs->show();
+        $data['page_title'] = '<strong>Edit</strong> Password';
+        $data['page_content'] = 'page/user/password';
+        $data['page_current'] = 'page/user';
+
+        //form props
+        $data['form_title'] = "<strong>Edit</strong> Password";
+        $data['form_action'] = site_url($this->url . '/password/' . $id);
+        $data['edit'] = true;
+
+
+        //get current data
+        $current_data = $this->m_users->getWhere(array('id' => $id));
+        if (count($current_data) == 0) {
+            $this->session->set_flashdata('alert', $this->alert->set_alert('danger', 'Data yang akan diedit tidak ditemukan di database'));
+            redirect($this->url);
+        }
+
+        if ($_POST) {
+            $this->password_validation_rules(TRUE);
+            if ($this->form_validation->run() == FALSE) {
+                $data['form_value'] = $this->input->post();
+                $data['validation_error'] =  $this->alert->set_alert('warning', validation_errors());
+            } else {
+                $post_data['password'] = password_hash($this->input->post('password'),PASSWORD_DEFAULT);
+                $this->update($id, $post_data);
+            }
+        }
+
+        $data['page_url'] = site_url($this->url);
+        $this->load->view('index', $data);
+    }
+
     public function update($id, $post_data)
     {
+        if (array_key_exists('password_confirm', $post_data)) unset($post_data['password_confirm']);
         $update = $this->m_users->update($id, $post_data);
+       
         if ($update) {
             $this->session->set_flashdata('alert', $this->alert->set_alert('info', 'Data berhasil di update ke database'));
         } else {
@@ -217,18 +285,24 @@ class User extends MY_Controller
         redirect($this->url);    
     }
 
-    public function form_validation_rules($edit=false)
+    private function form_validation_rules($edit=false)
     {
 
         $this->form_validation->set_rules('username', 'User Name', 'required|min_length[5]');
         $this->form_validation->set_rules('email', 'Email', 'required|min_length[5]|callback_email_check');
-        $this->form_validation->set_rules('group_id', 'User Level', 'required|callback_level_check');
+        $this->form_validation->set_rules('group_id', 'User Level', 'required|callback_select_check');
+        $this->form_validation->set_rules('agency_id', 'OPD', 'required|callback_select_check');
         if(!$edit){
             $this->form_validation->set_rules('password', 'Password', 'required|min_length[5]');
             $this->form_validation->set_rules('password_confirm', 'Password Confirm', 'required|min_length[5]|matches[password]');
         }
-        
     }
+
+    public function password_validation_rules(){
+        $this->form_validation->set_rules('password', 'Password', 'required|min_length[5]');
+        $this->form_validation->set_rules('password_confirm', 'Password Confirm', 'required|min_length[5]|matches[password]');
+    }
+
 
     public function email_check($str)
     {
@@ -249,11 +323,11 @@ class User extends MY_Controller
         return FALSE;
     }
 
-    public function level_check($str)
+    public function select_check($str)
     {
         if($str!=0) return TRUE;
 
-        $this->form_validation->set_message('level_check', 'You must select a {field}');
+        $this->form_validation->set_message('select_check', 'You must select a {field}');
         return FALSE;
     }
 

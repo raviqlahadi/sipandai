@@ -55,22 +55,50 @@ class Form_template{
         ";
     }
 
-    public function select($label, $name, $option, $selected = null)
+    public function select($label, $name, $option, $selected = null, $readonly=false)
     {
         $select_option = "<option value='0'>Please select</option>";
         foreach ($option as $key => $value) {
-
+            if (!is_object($value)) $value = (object) $value;
             $is_selected = ($selected != null && $value->id == $selected) ? 'selected' : '';
             $select_option = $select_option."<option " . $is_selected . " value='".$value->id."'>".$value->name."</option>";
         }
+
+        $readonly = ($readonly) ? 'readonly' : '';
        
 
         return "
         <label class='col-form-label' for='" . $name . "'>" . $label . "</label>
-        <select class='form-control' id='select1' name='" . $name . "'>
+        <select class='form-control' id='select1' name='" . $name . "' ". $readonly .">
             " . $select_option . "
         </select>
         ";
+    }
+
+    public function radio($label, $name, $option, $selected = null)
+    {
+       
+        $radio_option = '';
+        $i = 1;
+        foreach ($option as $key => $value) {
+            if (!is_object($value)) $value = (object) $value;
+            $is_selected = ($selected != null && $value->value == $selected || $i==1) ? 'checked' : '';
+            
+            $radio_option = $radio_option . "
+                <div class='form-check'>
+                    <input class='' id='radioopt_".$i."' type='radio' value='".$value->value."' name='".$name."' ".$is_selected.">
+                    <label class='' for='radioopt_".$i."'>".$value->label."</label>
+                </div>
+            ";
+            $i++;
+        }
+        return "
+        <div class='row'>
+            <div class='col-12'><label class='col-form-label' for='" . $name . "'>" . $label . "</label></div>
+            <div class='col-12'>
+            ".$radio_option. "
+            </div>
+        </div>";
     }
 
     /**

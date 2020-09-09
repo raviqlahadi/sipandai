@@ -3,7 +3,7 @@
     <thead>
         <tr>
             <?php
-            echo "<th style='max-width:20px'>No</th>";
+            echo "<th>No</th>";
             foreach ($table_head as $key => $value) {
                 echo "<th>" . ucfirst($value) .  "</th>";
             }
@@ -20,7 +20,7 @@
             echo "<tr>";
             echo "<td>" . $no . "</td>";
             foreach ($table_head as $key_head => $value_head) {
-                echo "<td>" . $value->{$value_head} .  "</td>";
+                echo "<td>" . $value->{$key_head} .  "</td>";
             }
             echo "<td>".$this->table_template->action_dropdown($page_url, $value->id,$page_url."?edit=true&id=".$value->id)."</td>";
             echo "</tr>";

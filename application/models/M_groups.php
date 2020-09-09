@@ -37,7 +37,7 @@ class M_groups extends MY_Model
     public function add($data)
     {
         $this->db->insert($this->table, $data);
-        return ($this->db->affected_rows() != 1) ? false : true;
+        return ($this->db->affected_rows() != 1) ? false : $this->db->insert_id();
     }
 
     public function update($id, $data)

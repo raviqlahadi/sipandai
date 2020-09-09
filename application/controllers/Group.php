@@ -7,9 +7,13 @@ class Group extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        //Do your magic here
+        //check if user loged in
         $this->check_access();
 
+        //check if it is admin root
+        $this->check_privileges();
+
+        //load crud page library
         $this->load->library('form_template');
         $this->load->library('table_template');
         $this->load->library('form_validation');
@@ -33,7 +37,10 @@ class Group extends MY_Controller
         $start_record = $page * $limit_per_page;        
         
         //table props
-        $data['table_head'] = array('name','description');
+        $data['table_head'] = array(
+            'name'=>'Nama Grup',
+            'description' => 'keterangan'
+        );
 
         $search = ($this->input->get('search') != null ) ? $this->input->get('search') : false ;
         
@@ -90,6 +97,7 @@ class Group extends MY_Controller
                     $data['form_action'] = site_url($this->url.'?edit=true&id='.$id);
                }else{
                     $this->session->set_flashdata('alert', $this->alert->set_alert('warning', 'Data tidak ditemukan di database'));
+                    redirect(site_url($this->url));
                }
             } else {
                 $this->session->set_flashdata('alert', $this->alert->set_alert('warning', 'Tidak ada data yang dipilih untuk di edit'));

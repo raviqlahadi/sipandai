@@ -3,6 +3,7 @@
 class MY_Controller extends CI_Controller{
     public function __construct(){
         parent::__construct();
+       
     }
 
     public function check_access($access=null){
@@ -12,6 +13,21 @@ class MY_Controller extends CI_Controller{
         }
         
     }
+
+    public function check_privileges($level=array(1)){
+        if(!is_array($level)) $level = (array) $level;
+        $current_level = $this->session->level;
+        $access = false;
+        foreach ($level as $key => $value) {
+            if($value==$current_level) {
+                $access = true;
+                break;
+            }
+        }
+        if(!$access) show_404();
+    }
+
+   
 }
 
 

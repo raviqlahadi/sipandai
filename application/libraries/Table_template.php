@@ -20,6 +20,49 @@ class Table_template
         ";
     }
 
+    public function action_dropdown_asset($url, $id, $with_edit_delete=false)
+    {   
+            if($with_edit_delete){
+                $edit_delete = "
+                <a class='dropdown-item' href='" . $url . "/edit/" . $id . "'>Edit</a>
+                <a class='dropdown-item text-danger' href='" . $url . "/delete/" . $id . "'>Delete</a>";
+            }else{
+                $edit_delete = "";
+            }
+            return "
+            <div class='dropdown'>
+                <button class='btn btn-primary btn-sm dropdown-toggle' type='button' id='dropdownMenuButton' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+                    Action
+                </button>
+                <div class='dropdown-menu' aria-labelledby='dropdownMenuButton'>
+                    <a class='dropdown-item' href='" . $url . "/status/" . $id . "'>Update status</a>
+                    <hr>
+                    <a class='dropdown-item' href='" . $url . "/detail/" . $id . "'>Detail</a>
+                    ". $edit_delete. "
+            </div>
+        ";
+    }
+
+    
+
+    public function badge($type){
+        switch ($type) {
+            case 'digunakan':
+                $return = 'info';
+                break;
+            case 'verifikasi':
+                $return = 'warning';
+                break;
+            case 'dikembalikan':
+                $return = 'success';
+                break;
+            default:
+                $return = 'primary';
+                break;
+        }
+        return $return;
+    }
+
     public function set_pagination($pagination)
     {
         

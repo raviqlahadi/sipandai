@@ -4,7 +4,7 @@
             <div>
                 <div class="fade-in">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <div class="card">
                                 <div class="card-header">
                                     <?php echo $page_title ?>
@@ -31,7 +31,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-12">
-                                            <div class="px-3"><?php if ($this->session->flashdata('alert') !== null) echo $this->session->flashdata('alert') ?></div>
+                                            <?php if ($this->session->flashdata('alert') !== null) echo $this->session->flashdata('alert') ?>
                                             <?php $this->load->view($page_current . '/table') ?>
                                         </div>
                                     </div>
@@ -48,7 +48,7 @@
                             </div>
 
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <div class="card">
                                 <div class="card-header"><?php echo $form_title ?></div>
                                 <div class="card-body">

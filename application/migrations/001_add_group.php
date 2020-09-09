@@ -11,14 +11,16 @@ class Migration_add_group extends CI_Migration {
                     'unsigned' => TRUE,
                     'auto_increment' => TRUE
                 ),
-                'group_name' => array(
+                'name' => array(
                     'type' => 'VARCHAR',
                     'constraint' => '100'
                 ),
-                'group_name' => array(
+                'description' => array(
                     'type' => 'TEXT',                    
+                ),
+                'date_created' => array(
+                    'type' => 'TIMESTAMP',
                 )
-                
             ));
         $this->dbforge->add_key('id', TRUE);       
         $this->dbforge->create_table('groups');

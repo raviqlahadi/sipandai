@@ -53,4 +53,6 @@ $route['default_controller'] = 'home';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
-$route['group/(:id)'] = 'group/kontol';
+$route['/profile/(:id)'] = 'profile/index/$1';
+
+$route['/login'] = 'auth/login';
