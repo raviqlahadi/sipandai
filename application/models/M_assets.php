@@ -13,7 +13,7 @@ class M_assets extends MY_Model{
     private $id = 'id';
 
     public function fetch($data, $count=false, $compiled=false){
-      return $this->fetch_db($data, $count, $compiled);
+      return $this->new_fetch_db($data, $count, $compiled);
     }
 
     public function get(){
@@ -55,7 +55,11 @@ class M_assets extends MY_Model{
       return $this->db->count_all($this->table);;
     }
 
-    
+    public function fetch_asset($agencies_id = false){
+      $result = $this->db->query('');
 
+      return $result->result();
+
+    }
 
 }

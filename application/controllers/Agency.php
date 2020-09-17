@@ -20,7 +20,7 @@ class Agency extends MY_Controller
         $this->load->library('breadcrumbs');
         
         $this->load->model('m_agencies');
-        
+           
         
     }
     
@@ -30,7 +30,7 @@ class Agency extends MY_Controller
 
         //page config
         $limit = $this->input->get('limit');
-        $limit_per_page = ($limit != null && $limit != '') ? $limit : 2;
+        $limit_per_page = ($limit != null && $limit != '') ? $limit : 10;
         $page = ($this->uri->segment(3)) ? ($this->uri->segment(3) - 1) : 0;
         $start_record = $page * $limit_per_page;        
         
@@ -104,7 +104,16 @@ class Agency extends MY_Controller
         $data['form_title'] = "<strong>Add new</strong> Agency";
         $data['form_action'] = site_url($this->url.'/create');
 
-       
+        $this->load->model('m_officers');
+        $temp_officers = $this->m_officers->fetch(array('select' => array('id', 'full_name')));
+        $officers = array();
+        foreach ($temp_officers as $key => $value) {
+            array_push($officers, array(
+                'id' => $value->id,
+                'name' => $value->full_name
+            ));
+        }
+        $data['officers_select'] = $officers;
 
 
         if ($_POST) {
@@ -159,10 +168,16 @@ class Agency extends MY_Controller
         $data['form_action'] = site_url($this->url . '/edit/'.$id);
         $data['edit'] = true;
 
-        //select option
-        $this->load->model('m_groups');
-        $group_data = $this->m_groups->fetch(array('select' => array('id', 'name')));
-        $data['group_select'] = $group_data;
+        $this->load->model('m_officers');
+        $temp_officers = $this->m_officers->fetch(array('select' => array('id', 'full_name')));
+        $officers = array();
+        foreach ($temp_officers as $key => $value) {
+            array_push($officers, array(
+                'id' => $value->id,
+                'name' => $value->full_name
+            ));
+        }
+        $data['officers_select'] = $officers;
 
         //get current data
         $current_data = $this->m_agencies->getWhere(array('id'=>$id));
@@ -218,6 +233,8 @@ class Agency extends MY_Controller
     {
         $this->form_validation->set_rules('code', 'Kode OPD', 'required|min_length[5]|callback_code_check');
         $this->form_validation->set_rules('name', 'Nama OPD', 'required');
+        $this->form_validation->set_rules('hod_id', 'Kepala Dinas', 'required');
+        $this->form_validation->set_rules('ao_id', 'Pejabat Aset', 'required');
         $this->form_validation->set_rules('email', 'Email', 'min_length[5]|callback_email_check');
        
     }

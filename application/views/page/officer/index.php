@@ -32,7 +32,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-12">
-                                            <div class="px-3"><?php if ($this->session->flashdata('alert') !== null) echo $this->session->flashdata('alert') ?></div>
+                                            <?php if ($this->session->flashdata('alert') !== null) echo $this->session->flashdata('alert') ?>
                                             <?php $this->load->view($page_current . '/table') ?>
                                         </div>
                                     </div>

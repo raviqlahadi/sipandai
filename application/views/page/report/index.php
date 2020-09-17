@@ -8,43 +8,64 @@
                             <div class="card">
                                 <div class="card-header">
                                     <?php echo $page_title ?>
-                                    <a class="btn btn-primary float-right text-white" href="<?php echo $page_url . '/create'; ?>"><i class="fa fa-plus"></i> New Data</a>
-                                    <button class="btn btn-primary mr-1 float-right" data-toggle="collapse" type="button" data-target="#collapseSearch" role="button" aria-expanded="false" aria-controls="collapseSearch">
-                                        <i class="fa fa-search"></i>
-                                    </button>
+
 
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-12">
-                                            <div class="collapse" id="collapseSearch">
-                                                <form action="" method="get">
-                                                    <div class="input-group pb-3">
-                                                        <input class="form-control" id="search" type="text" name="search" placeholder="Search" required>
-                                                        <span class="input-group-append">
-                                                            <a class="btn btn-info" href="<?php echo $page_url; ?>"><i class="fa fa-sync-alt"></i></a>
-                                                            <button class="btn btn-primary" type="submit">Search</button>
-                                                        </span>
-                                                    </div>
-                                                </form>
+                                        <div class="col-lg-12">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <form action="<?php echo $page_url ?>" method="post">
+                                                        <div class="row">
+                                                            <div class="col-lg-4">
+                                                                <div class="form-group">
+                                                                    <?php echo $this->form_template->select('OPD', 'agency_id', $select_agencies, (isset($form_value['agency_id']) ? $form_value['agency_id'] : null)) ?>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-4">
+                                                                <div class="form-group">
+                                                                    <label for="type">Tipe Report</label>
+                                                                    <select class="form-control" id="type" name="type">
+                                                                        <option value="officer">ASN</option>
+                                                                        <option value="asset">BMD</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-4">
+                                                                <div class="form-group">
+                                                                    <label for="filter">Filter</label>
+                                                                    <select class="form-control" id="filter" name="filter">
+
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-lg-12">
+                                                                <div class="form-group">
+                                                                    <button type="submit" class="btn btn-primary btn-block">Generate Report</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </form>
+                                                </div>
                                             </div>
+                                        </div>
+                                        <div class="col-lg-8">
+
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-12">
-                                            <div class="px-3"><?php if ($this->session->flashdata('alert') !== null) echo $this->session->flashdata('alert') ?></div>
-                                            <?php $this->load->view($page_current . '/table') ?>
+                                            <?php if ($this->session->flashdata('alert') !== null) echo $this->session->flashdata('alert') ?>
+                                            <?php $this->load->view('page/report/table') ?>
                                         </div>
                                     </div>
 
                                 </div>
-                                <?php
-                                if ($pagination != false) {
-                                    echo  '<div class="card-footer">
-                                                    ' . $pagination . '
-                                                </div>';
-                                }
-                                ?>
+
 
                             </div>
 
@@ -57,16 +78,58 @@
         </div>
     </div>
 </main>
-<?php
-if ($this->input->get('search') != null) {
-?>
-    <script>
-        let collapseSearch = document.getElementById('collapseSearch');
-        let searchInput = document.getElementById('search');
 
-        collapseSearch.classList.add('show');
-        search.value = '<?php echo $this->input->get('search') ?>';
-    </script>
-<?php
-}
-?>
+<script>
+    const typeSelect = document.getElementById('type')
+    const filterSelect = document.getElementById('filter')
+
+    var asnOption = ['semua', 'menggunakan', 'bebas']
+    var assetOption = ['semua', 'kembali', 'verifikasi', 'digunakan']
+
+    if (filterSelect.options.length == 0) {
+
+        asnOption.forEach((opt) => {
+            filterSelect.appendChild(addOption(opt))
+        })
+
+    }
+    typeSelect.onchange = () => {
+        let type_value = typeSelect.options[typeSelect.selectedIndex].value
+        console.log(filterSelect.options)
+        switch (type_value) {
+            case 'officer':
+                removeOpt(filterSelect.options.length)
+
+                asnOption.forEach((opt) => {
+                    filterSelect.appendChild(addOption(opt))
+                })
+
+                break;
+            case 'asset':
+                removeOpt(filterSelect.options.length)
+                assetOption.forEach((opt) => {
+                    filterSelect.appendChild(addOption(opt))
+                })
+                break;
+            default:
+                break;
+        }
+    }
+
+    function removeOpt(length) {
+        console.log(length)
+        if (length > 0) {
+            for (let i = 0; i < length; i++) {
+                filterSelect.remove(filterSelect.options)
+
+            }
+        }
+    }
+
+    function addOption(opt) {
+        var option = document.createElement('option')
+        option.value = opt
+        option.text = opt.charAt(0).toUpperCase() + opt.slice(1)
+        return option
+    }
+</script>

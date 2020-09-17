@@ -16,247 +16,153 @@ class Report extends MY_Controller
         $this->load->library('pagination');
         $this->load->library('breadcrumbs');
         
-        $this->load->model('m_reports');
-        
         
     }
     
     public function index()
     {
 
-
-        //page config
-        $limit = $this->input->get('limit');
-        $limit_per_page = ($limit != null && $limit != '') ? $limit : 2;
-        $page = ($this->uri->segment(3)) ? ($this->uri->segment(3) - 1) : 0;
-        $start_record = $page * $limit_per_page;        
-        
-        // table props, change this base on table props
-        $data['table_head'] = array('username','email','level');
-
-        $search = ($this->input->get('search') != null ) ? $this->input->get('search') : false ;
-        
-
-        if($search){
-            $fetch['like'] = array('name'=>array('reportname','email'), 'key'=>$search);
-        }
-
-        $fetch['select'] = array('id','username', 'email');
-        $fetch['select_join'] = array('g.name as level');
-        $fetch['join'] = array(
-            array(
-                "table"=>"groups g",
-                "fk"=>"group_id",
-                "join"=>"left",
-                "previx"=>"g"
-        ));
-        $fetch['start'] = $start_record;
-        $fetch['limit'] = $limit_per_page;
-        $data['table_content'] = $this->m_reports->fetch($fetch);
-        $total_records = $this->m_reports->fetch($fetch,true);
-
-        //pagination config
-        $pagination['base_url'] = site_url($this->url) . '/index';
-        $pagination['limit_per_page'] = $limit_per_page;
-        $pagination['start_record'] = $start_record;
-        $pagination['uri_segment'] = 3;
-        $pagination['total_records'] =  $total_records;
-        $data['pagination'] = false;
-        if ($pagination['total_records'] > 0){
-            $config = $this->table_template->set_pagination($pagination);
-            $this->pagination->initialize($config);
-            $data['pagination'] = $this->pagination->create_links();
-        }
-
-
+        $this->load->library('form_template');
         //breadcrumbs config
         $this->breadcrumbs->push('Report', '/report');
         $this->breadcrumbs->unshift('Admin', '/');
 
+        //data for select
+        $this->load->model(array('m_agencies'));
+        $data['select_agencies'] = $this->m_agencies->get();
 
+        //if post is send
+        if($_POST){
+            $fetch_result = $this->fetch_data($this->input->post());
+            $table_head = $this->table_head($this->input->post('type'));
+            $page_title = $this->report_name($this->input->post());
+        }else{
+            $fetch_result = false;
+            $table_head = false;
+            $page_title = '<strong>Report</strong> Management';
+        }
+        
+        
+
+        $data['table_content'] = $fetch_result;
+        $data['table_head'] = $table_head ;
         //page properties        
         $data['breadcrumbs'] = $this->breadcrumbs->show();
-        $data['page_title'] = '<strong>Report</strong> Management';
-        $data['table_start_number'] = $start_record;
+        $data['page_title'] = $page_title;
         $data['page_content'] = 'page/report/index';
         $data['page_current'] = 'page/report';
         $data['page_url'] = site_url($this->url);
+        $data['view_library'] = array('datatable');
 
         $this->load->view('index', $data);
     }
 
-    
-    public function create()
-    {
-        
-        //breadcrumbs config
-        $this->breadcrumbs->push('Report', '/report');
-        $this->breadcrumbs->push('Create', '/create');
-        $this->breadcrumbs->unshift('Admin', '/');
+    public function fetch_data($post_data){
+        $agency_id = $post_data['agency_id'];
+        $type = $post_data['type'];
+        $filter = $post_data['filter'];
 
-        //page props
-        $data['breadcrumbs'] = $this->breadcrumbs->show();
-        $data['page_title'] = '<strong>Add New</strong> Report';
-        $data['page_content'] = 'page/report/create';
-        $data['page_current'] = 'page/report';
+        switch ($type) {
+            case 'officer':
+                $this->load->model('m_officers');
+                $fech['select'] = '*';
+                $fech['select_join'] = array('s.status as officer_status');
+                $fetch['join'] = array(
+                    array(
+                        'table' => 'asset_status s',
+                        'join' => 'left',
+                        'on' => 'officers.id=s.officer_id'
 
-        //form props
-        $data['form_title'] = "<strong>Add new</strong> Report";
-        $data['form_action'] = site_url($this->url.'/create');
-
-        //select option
-        $this->load->model('m_groups');
-        $group_data = $this->m_groups->fetch(array('select'=>array('id','name')));
-        $data['group_select'] = $group_data;
-
-
-        if ($_POST) {
-            $this->form_validation_rules();
-            if ($this->form_validation->run() == FALSE) {
-                $data['form_value'] = $this->input->post();
-                $data['validation_error'] =  $this->alert->set_alert('warning', validation_errors());
-            } else {
-                $post_data = $this->input->post();               
-                $this->add($post_data);                
-            }
+                    )
+                );
+                $fetch['where'] = ($filter == 'semua') ? array() : array('s.status' => $filter);
+                if($agency_id!=0)  array_push($fetch['where'], array('agency_id'=>$agency_id)); 
+                $fetch_result = $this->m_officers->fetch($fech);
+                break;
+            case 'asset':
+                $this->load->model('m_assets');
+                $fech['select'] = '*';
+                $fech['select_join'] =  array('s1.status as asset_status');
+                $fetch['join'] = array(
+                    array(
+                        'table' => 'asset_status s1',
+                        'join' => 'left',
+                        'on' => 'assets.id=s1.asset_id'
+                    ), array(
+                        "table" => "asset_status s2",
+                        "join" => "left outer",
+                        "on" => "(assets.id = s2.asset_id AND 
+                            (s1.date_created < s2.date_created OR 
+                                (s1.date_created  = s2.date_created AND s1.id < s2.id)))"
+                    )
+                );
+                $fetch['where'] = array('s2.id IS NULL');
+                if($filter != 'semua') array_push($fetch['where'], array('s.status' => $filter));
+                if ($agency_id != 0)  array_push($fetch['where'], array('agency_id' => $agency_id)); 
+                $fetch_result = $this->m_assets->fetch($fech);
+                break;
         }
+        return $fetch_result;
+    }    
 
-        $data['page_url'] = site_url($this->url);
-        $this->load->view('index', $data);
-    }
-
-
-    public function add($post_data)
-    {
-        if(array_key_exists('password_confirm', $post_data)) unset($post_data['password_confirm']);
-        $insert = $this->m_reports->add($post_data);
-        if ($insert) {
-            $this->session->set_flashdata('alert', $this->alert->set_alert('info', 'Data berhasil di masukan ke database'));
-        } else {
-            $this->session->set_flashdata('alert', $this->alert->set_alert('danger', 'Data gagal di masukan ke database'));
-        }
-        redirect($this->url);
-    }
-
-    public function edit($id)
-    {
-        //checkk if id is exist
-        if ($id == null) {
-            $this->session->set_flashdata('alert', $this->alert->set_alert('danger', 'Anda perlu memilih data yang akan di edit'));
-            redirect($this->url);
-        }
-
-        //breadcrumbs config
-        $this->breadcrumbs->push('Report', '/report');
-        $this->breadcrumbs->push('Edit', '/edit');
-        $this->breadcrumbs->unshift('Admin', '/');
-
-        //page props
-        $data['breadcrumbs'] = $this->breadcrumbs->show();
-        $data['page_title'] = '<strong>Edit</strong> Report';
-        $data['page_content'] = 'page/report/edit';
-        $data['page_current'] = 'page/report';
-
-        //form props
-        $data['form_title'] = "<strong>Edit</strong> Report";
-        $data['form_action'] = site_url($this->url . '/edit/'.$id);
-        $data['edit'] = true;
-
-        //select option
-        $this->load->model('m_groups');
-        $group_data = $this->m_groups->fetch(array('select' => array('id', 'name')));
-        $data['group_select'] = $group_data;
-
-        //get current data
-        $current_data = $this->m_reports->getWhere(array('id'=>$id));
-        if(count($current_data)==0){
-            $this->session->set_flashdata('alert', $this->alert->set_alert('danger', 'Data yang akan diedit tidak ditemukan di database'));
-            redirect($this->url);
+    public function table_head($type){
+        if($type=='officer'){
+            return array('nip'=>'NIP','full_name'=>"Nama",'position'=>"Posisi");
         }else{
-            $data['form_value'] = (array) $current_data[0];
+            return array('asset_code'=>"Kode Aset", 'type'=>"Jenis", 'brand'=>"Merk");
         }
-
-        if ($_POST) {
-            $this->form_validation_rules(TRUE);
-            if ($this->form_validation->run() == FALSE) {
-                $data['form_value'] = $this->input->post();
-                $data['validation_error'] =  $this->alert->set_alert('warning', validation_errors());
-            } else {
-                $post_data = $this->input->post();
-                $this->update($id, $post_data);
-            }
-        }
-
-        $data['page_url'] = site_url($this->url);
-        $this->load->view('index',$data);
     }
 
-    public function update($id, $post_data)
-    {
-        $update = $this->m_reports->update($id, $post_data);
-        if ($update) {
-            $this->session->set_flashdata('alert', $this->alert->set_alert('info', 'Data berhasil di update ke database'));
-        } else {
-            $this->session->set_flashdata('alert', $this->alert->set_alert('danger', 'Data gagal di update ke database'));
-        }
-        redirect($this->url);
-    }
-
-    public function delete($id=null)
-    {
-        if($id!=null){
-            $where_id['id'] = $id;
-            if($this->m_reports->delete($where_id)){
-                $this->session->set_flashdata('alert', $this->alert->set_alert('info', 'Data berhasil di hapus'));
-            }else{
-                $this->session->set_flashdata('alert', $this->alert->set_alert('danger', 'Data tidak ditemukan'));
-            }
-        }else{
-            $this->session->set_flashdata('alert', $this->alert->set_alert('danger', 'Anda perlu memilih data yang akan di hapus'));
-        }
-        redirect($this->url);    
-    }
-
-    public function form_validation_rules($edit=false)
-    {
-
-        $this->form_validation->set_rules('reportname', 'Report Name', 'required|min_length[5]');
-        $this->form_validation->set_rules('email', 'Email', 'required|min_length[5]|callback_email_check');
-        $this->form_validation->set_rules('group_id', 'Report Level', 'required|callback_level_check');
-        if(!$edit){
-            $this->form_validation->set_rules('password', 'Password', 'required|min_length[5]');
-            $this->form_validation->set_rules('password_confirm', 'Password Confirm', 'required|min_length[5]|matches[password]');
-        }
+    public function report_name($post_data){
+        $agency_id = $post_data['agency_id'];
+        $type = $post_data['type'];
+        $filter = $post_data['filter'];
+        $name = 'LAPORAN ';
         
-    }
-
-    public function email_check($str)
-    {
-
-        $data = $this->m_reports->getWhere(array('email' => $str));
-        if (empty($data)) {
-            return TRUE;
+        switch ($type) {
+            case 'officer':
+                $name .= ' ASN ';
+                switch ($filter) {
+                    case 'menggunakan':
+                        $name .= ' YANG MENGGUNAKAN ASET BMD ';
+                        break;
+                    case 'bebas':
+                        $name .= ' YANG BEBAS ASET ';
+                        break;
+                    default:
+                        # code...
+                        break;
+                }
+                break;
+            case 'asset':
+                $name .= ' ASET BMD ';
+                switch ($filter) {
+                    case 'kembali':
+                        $name .= ' YANG TIDAK DIGUNAKAN ';
+                        break;
+                    case 'verifikasi':
+                        $name .= ' YANG MENUNGU VERIFIKASI ';
+                        break;
+                    case 'digunakan':
+                        $name .= ' YANG DIGUNAKAN ';
+                        break;
+                    default:
+                        # code...
+                        break;
+                }
+                break;
         }
-        $edit = ($this->uri->segment(2) != null &&  $this->uri->segment(2) == 'edit' ? true : false);
-        if ($edit) {
-            $id = $this->uri->segment(3);
-            if ($data[0]->id == $id) {
-                return TRUE;
-            }
+        if ($agency_id != 0) {
+            $this->load->model('m_agencies');
+            $agency = $this->m_agencies->getWhere(array('id' => $agency_id));
+            $code = $agency[0]->code;
+            $name .= ' ' . $code . ' ';
         }
 
-        $this->form_validation->set_message('email_check', 'The {field} already taken. please use another email');
-        return FALSE;
+        $name .= Date('d-m-Y');
+
+        return $name;
     }
-
-    public function level_check($str)
-    {
-        if($str!=0) return TRUE;
-
-        $this->form_validation->set_message('level_check', 'You must select a {field}');
-        return FALSE;
-    }
-
 
 }
     

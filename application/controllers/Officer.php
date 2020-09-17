@@ -28,7 +28,7 @@ class Officer extends MY_Controller
 
         //page config
         $limit = $this->input->get('limit');
-        $limit_per_page = ($limit != null && $limit != '') ? $limit : 2;
+        $limit_per_page = ($limit != null && $limit != '') ? $limit : 10;
         $page = ($this->uri->segment(3)) ? ($this->uri->segment(3) - 1) : 0;
         $start_record = $page * $limit_per_page;        
         
@@ -51,9 +51,9 @@ class Officer extends MY_Controller
         $fetch['join'] = array(
             array(
                 "table"=>"agencies a",
-                "fk"=>"agency_id",
+                "on" => "officers.agency_id = a.id",
                 "join"=>"left",
-                "previx"=>"a"
+                
         ));
         $fetch['start'] = $start_record;
         $fetch['limit'] = $limit_per_page;
@@ -123,6 +123,26 @@ class Officer extends MY_Controller
         $agency_data = $this->m_agencies->fetch($fetch);
         $data['agency_select'] = $agency_data;
 
+        //select religion
+        $religion_select = array(
+            array('id' => 'islam','name' => 'Islam'),
+            array('id' => 'protestan', 'name' => 'Protestan'),
+            array('id' => 'katolik', 'name' => 'Katolik'),
+            array('id' => 'hindu', 'name' => 'Hindu'),
+            array('id' => 'budha', 'name' => 'Budha'), 
+        );
+        $data['religion_select'] = $religion_select;
+        //radio option
+        $gender_data = array(
+            array(
+                'value' => 'laki-laki',
+                'label' => 'Laki-Laki'
+            ), array(
+                'value' => 'perempuan',
+                'label' => 'Perempuan'
+            ),
+        );
+        $data['gender_option'] = $gender_data;
         
 
 
@@ -184,6 +204,27 @@ class Officer extends MY_Controller
         $this->load->model('m_agencies');
         $agency_data = $this->m_agencies->fetch(array('select' => array('id', 'name')));
         $data['agency_select'] = $agency_data;
+
+        //select religion
+        $religion_select = array(
+            array('id' => 'islam', 'name' => 'Islam'),
+            array('id' => 'protestan', 'name' => 'Protestan'),
+            array('id' => 'katolik', 'name' => 'Katolik'),
+            array('id' => 'hindu', 'name' => 'Hindu'),
+            array('id' => 'budha', 'name' => 'Budha'),
+        );
+        $data['religion_select'] = $religion_select;
+        //radio option
+        $gender_data = array(
+            array(
+                'value' => 'laki-laki',
+                'label' => 'Laki-Laki'
+            ), array(
+                'value' => 'perempuan',
+                'label' => 'Perempuan'
+            ),
+        );
+        $data['gender_option'] = $gender_data;
 
         //get current data
         $current_data = $this->m_officers->getWhere(array('id'=>$id));

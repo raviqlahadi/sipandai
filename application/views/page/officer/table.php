@@ -4,7 +4,7 @@
         <tr>
             <?php
            
-            echo "<th style='max-width:20px'>No</th>";
+            echo "<th>No</th>";
             foreach ($table_head as $key => $value) {
                 echo "<th>" . ucfirst($value) .  "</th>";
             }

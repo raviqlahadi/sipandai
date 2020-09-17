@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@coreui/coreui": "^3.2.2",
-    "@fortawesome/fontawesome-free": "^5.14.0"
+    "@fortawesome/fontawesome-free": "^5.14.0",
+    "ckeditor4": "^4.15.0"
   }
 }

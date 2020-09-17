@@ -5,7 +5,13 @@
 <meta name="description" content="<?php echo APP_DESC ?>" />
 <meta name="author" content="<?php echo APP_AUTHOR ?>">
 
-<title><?php echo APP_NAME ?></title>
+<title><?php
+        if (!isset($page_title) || $page_title == null) {
+            echo APP_NAME;
+        } else {
+            echo strip_tags($page_title);
+        }
+        ?></title>
 
 <link rel="shortcut icon" type="image/png" href="<?php echo base_url() . FAVICON_IMAGE; ?>" />
 <!-- Main styles for this application-->
@@ -13,4 +19,17 @@
 <link href="<?php echo base_url() .  FONTAWESOME_PATH  ?>css/all.min.css" rel="stylesheet">
 
 <!-- Costum Style -->
-<link rel="stylesheet" href="<?php echo base_url() .'/assets/css/style.css'; ?>" />
+<link rel="stylesheet" href="<?php echo base_url() . '/assets/css/style.css'; ?>" />
+<?php
+if (isset($view_library) && array_search('datatable', $view_library) !== false) {
+?>
+    <link rel="stylesheet" type="text/css" href="<?php echo base_url() . '/assets/' ?>DataTables/datatables.min.css" />
+
+<?php
+}
+?>
+<?php
+if (isset($view_library) && array_search('ckeditor', $view_library) !== false) {
+    echo '<script src="' . base_url() . 'assets/node_modules/ckeditor4/ckeditor.js"></script>';
+}
+?>

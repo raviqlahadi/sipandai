@@ -46,27 +46,44 @@ class Asset extends MY_Controller
         }
 
         $fetch['select'] = array('id','asset_code', 'type', 'brand');
-        $fetch['select_join'] = array('a.name as agency_name','s.status as asset_status');
+        $fetch['select_join'] = array(
+            'a.name as agency_name',
+            's1.status as asset_status',
+            'o.full_name as officer_name'
+        );
         $fetch['join'] = array(
             array(
                 "table" => "agencies a",
-                "fk" => "agency_id",
                 "join" => "left",
-                "previx" => "a"
+                "on" => "a.id = assets.agency_id"
             ),
             array(
-                "table" => "asset_status s",
-                "fk" => "asset_id",
+                "table" => "asset_status s1",
                 "join" => "left",
-                "previx" => "s",
-                "reverse" => TRUE
+                "on" => "s1.asset_id = assets.id"
+            ),
+            array(
+                "table" => "asset_status s2",
+                "join" => "left outer",
+                "on" => "(assets.id = s2.asset_id AND 
+                            (s1.date_created < s2.date_created OR 
+                                (s1.date_created  = s2.date_created AND s1.id < s2.id)))"
+            ),
+            array(
+                "table" =>"officers o",
+                "join" => "left",
+                "on" => "o.id = s1.officer_id"
             )
+
         );
+        $fetch['where'] = array('s2.id IS NULL');
         $fetch['start'] = $start_record;
         $fetch['limit'] = $limit_per_page;
-        if($this->session->level!=1) $fetch['where'] = array('agency_id'=>$this->session->agency_id);
+        if($this->session->level!=1) array_push($fetch['where'], array('assets.agency_id'=> $this->session->agency_id));
+        //var_dump($this->m_assets->fetch($fetch,false,true));
         $data['table_content'] = $this->m_assets->fetch($fetch);
         $total_records = $this->m_assets->fetch($fetch,true);
+
 
         //pagination config
         $pagination['base_url'] = site_url($this->url) . '/index';
@@ -219,6 +236,16 @@ class Asset extends MY_Controller
         );
         $data['status_select'] = ($this->session->level==1) ? $admin_root : $admin_opd;
 
+        //check if prev status is exist 
+        $this->load->model('m_status');
+        $prev_status = $this->m_status->fetch(array(
+            'where' => ["asset_id"=>$id],
+            'order' => ['field'=>'date_created','type'=>'ASC'],
+            'limit' => 1));
+
+        
+        if(count($prev_status) > 0) $data['form_value'] = (array) $prev_status[0];
+
         if ($_POST) {
             $this->form_status_validation_rules();
             if ($this->form_validation->run() == FALSE) {
@@ -316,8 +343,10 @@ class Asset extends MY_Controller
 
     public function delete($id=null)
     {
+        $this->load->model('m_status');
         if($id!=null){
             $where_id['id'] = $id;
+            if(!$this->m_status->delete(array('asset_id'=>$id))) $this->session->set_flashdata('alert', $this->alert->set_alert('danger', 'Gagal menghapus status asset'));
             if($this->m_assets->delete($where_id)){
                 $this->session->set_flashdata('alert', $this->alert->set_alert('info', 'Data berhasil di hapus'));
             }else{

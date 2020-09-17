@@ -134,8 +134,9 @@ class Form_template{
         return "
              <div class='col-12'>
                 <div class='float-right'>                    
-                    <button class='btn btn-sm btn-primary' type='submit'> Submit</button>
-                     <button class='btn btn-sm btn-danger' type='reset'> Reset</button>
+                <button class='btn btn-outline-primary' type='reset'> Reset</button>    
+                <button class='btn btn btn-primary px-5' type='submit'> Submit</button>
+                     
                 </div>
             </div>
         ";

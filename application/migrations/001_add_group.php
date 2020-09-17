@@ -28,6 +28,6 @@ class Migration_add_group extends CI_Migration {
 
     public function down()
     {
-        $this->dbforge->drop_table('user');
+        $this->dbforge->drop_table('groups');
     }
 }

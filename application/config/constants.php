@@ -92,5 +92,6 @@ define('APP_AUTHOR', 'Raviq Lahadi');
 define('APP_DESC', 'Boilerplate For Rapid Develompment');
 define('FAVICON_IMAGE', 'assets/favicon.ico');
 define('ICON_IMAGE', 'assets/logo/coreigniter.png');
+define('LOGO_PATH', 'assets/logo_agencies');
 define('COREUI_PATH', 'assets/node_modules/@coreui/coreui/dist/');
 define('FONTAWESOME_PATH', 'assets/node_modules/@fortawesome/fontawesome-free/');

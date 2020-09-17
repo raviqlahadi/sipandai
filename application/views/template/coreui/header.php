@@ -6,8 +6,8 @@
         <i class="fa fa-bars"></i>
     </button>
     <ul class="c-header-nav d-md-down-none">
-        <li class="c-header-nav-item px-3"><a class="c-header-nav-link" href="<?php echo site_url('/profile')?>">Profile</a></li>
-        <li class="c-header-nav-item px-3"><a class="c-header-nav-link" href="#">Settings</a></li>
+        <li class="c-header-nav-item px-3"><a class="c-header-nav-link" href="<?php echo site_url('/profile') ?>">Profile</a></li>
+        <li class="c-header-nav-item px-3"><a class="c-header-nav-link" href="<?php echo site_url('/setting') ?>">Settings</a></li>
     </ul>
     <ul class="c-header-nav ml-auto mr-4">
         <li class="c-header-nav-item dropdown">
@@ -23,13 +23,13 @@
     </ul>
     <!-- Breadcrumb-->
     <?php
-        if(isset($breadcrumbs)){
-            echo '
+    if (isset($breadcrumbs)) {
+        echo '
                  <div class="c-subheader px-3">
-                    '. $breadcrumbs .'
+                    ' . $breadcrumbs . '
                 </div>
             ';
-        }
+    }
     ?>
     <!-- Breadcrumb Menu-->
 </header>
