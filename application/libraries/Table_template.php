@@ -20,6 +20,62 @@ class Table_template
         ";
     }
 
+    public function action_dropdown_officer($url, $id, $print=false, $edit_url = null)
+    {
+        $modal = '';
+        if($print){
+            $action = " <a class='dropdown-item'  data-toggle='modal' data-target='#exampleModal".$id."'>Print Bebas Aset</a>";
+            $modal = "<div class='modal fade' id='exampleModal" . $id . "' tabindex='-1' role='dialog' aria-labelledby='exampleModalLabel' aria-hidden='true'>
+                        <div class='modal-dialog' role='document'>
+                            <div class='modal-content'>
+                            <div class='modal-header'>
+                                <h5 class='modal-title' id='exampleModalLabel'>Print Dokumen Bebas Aset</h5>
+                                <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                <span aria-hidden='true'>&times;</span>
+                                </button>
+                            </div>
+                            <div class='modal-body'>
+                                <form action='" . site_url() . "printdoc/index/" . $id . "' method='get'>
+                                    <div class='form-group'>
+                                        <label class='col-form-label' for='perihal'>Keterangan</label>
+                                        <input class='form-control' id='perihal' type='text' name='perihal' placeholder='Keterangan' >
+        
+                                    </div>
+                                    <div class='form-group'>
+                                        <button type='button' class='btn btn-secondary' data-dismiss='modal'>Close</button>
+                                        <button type='submit' class='btn btn-primary'>Save changes</button>
+                                    </div>
+                                </form>
+                            </div>
+                           
+                            </div>
+                        </div>
+                    </div>";
+        }else{
+            $action = " <a class='dropdown-item' href='" . $url . "/asset/" . $id . "'>Penguasaan Aset</a>";
+            
+        }
+        if ($edit_url != null) {
+            $edit = "<a class='dropdown-item' href='" . $edit_url . "'>Edit</a>";
+        } else {
+            $edit = " <a class='dropdown-item' href='" . $url . "/edit/" . $id . "'>Edit</a>";
+        }
+        
+        return "
+            <div class='dropdown'>
+                <button class='btn btn-primary btn-sm dropdown-toggle' type='button' id='dropdownMenuButton' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+                    Action
+                </button>
+                <div class='dropdown-menu' aria-labelledby='dropdownMenuButton'>
+                    " . $action . "
+                    <hr>
+                    " . $edit . "
+                    <a class='dropdown-item text-danger' href='" . $url . "/delete/" . $id . "'>Delete</a>
+            </div>
+            ".$modal."
+        ";
+    }
+
     public function action_dropdown_asset($url, $id, $with_edit_delete=false)
     {   
             if($with_edit_delete){

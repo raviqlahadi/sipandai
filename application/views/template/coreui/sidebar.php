@@ -1,7 +1,7 @@
 <div class="c-sidebar c-sidebar-dark c-sidebar-fixed c-sidebar-lg-show" id="sidebar">
     <div class="c-sidebar-brand d-lg-down-none">
         <div class="c-sidebar-brand-full">
-            <h3>CORE<span style="font-weight: 100;">App</span></h3>
+            <h3>SI<span style="font-weight: 100;">PANDAI</span></h3>
         </div>
         <div class="c-sidebar-brand-minimized">
             <h3>C</h3>

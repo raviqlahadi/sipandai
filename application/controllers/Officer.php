@@ -45,9 +45,15 @@ class Officer extends MY_Controller
         if($search){
             $fetch['like'] = array('name'=>array('nip','full_name'), 'key'=>$search);
         }
+        
+        // SELECT o.*, (SELECT s.status FROM asset_status s WHERE s.officer_id=o.id 
+        // ORDER BY s.date_created DESC LIMIT 1) as statusBebas FROM officers o
 
         $fetch['select'] = array('id','nip', 'full_name','position');
-        $fetch['select_join'] = array('a.name as agency_name');
+        $fetch['select_join'] = array('a.name as agency_name',
+            '(SELECT s.status FROM asset_status s WHERE s.officer_id=officers.id 
+                ORDER BY s.date_created DESC LIMIT 1) as status_penguasaan'    
+             );
         $fetch['join'] = array(
             array(
                 "table"=>"agencies a",
@@ -57,7 +63,8 @@ class Officer extends MY_Controller
         ));
         $fetch['start'] = $start_record;
         $fetch['limit'] = $limit_per_page;
-        if ($this->session->level != 1) $fetch['where'] = array('agency_id' => $this->session->agency_id);
+        $fetch['where'] = [];
+        if ($this->session->level != 1) array_push($fetch['where'], array('officers.agency_id' => $this->session->agency_id));
         $data['table_content'] = $this->m_officers->fetch($fetch);
         $total_records = $this->m_officers->fetch($fetch,true);
 
