@@ -3,13 +3,14 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Dashboard extends MY_Controller {
-
+    private $url = 'dashboard';
     
     public function __construct()
     {
         parent::__construct();
         $this->check_access();
         $this->load->library('Breadcrumbs');
+        $this->load->library('table_template');
         $this->load->model(array('m_officers','m_assets','m_status'));
     }
     
@@ -17,19 +18,69 @@ class Dashboard extends MY_Controller {
     {
         $data['page_content'] = 'page/dashboard/index';
 
-        $data['assets_count'] = $this->count_asset();
-        $data['officers_count'] = $this->count_officers();
-        $data['assets_bebas_count'] = $this->count_asset_status('kembali');
-        $data['assets_dikuasai_count'] = $this->count_asset_status('dikuasai');
+        $search = ($this->input->get('search') != null) ? $this->input->get('search') : false;
+
+
+        if ($search) {
+            // table props, change this base on table props
+            $data['table_head'] = array(
+                'nip' => 'NIP',
+                'full_name' => 'Nama',
+                'position' => 'Jabatan',
+                'agency_name' => 'Instansi'
+            );
+           $data['table_content'] = $this->search_asn($search);
+           $data['search'] = $search;
+        }
        
 
         //initialize breadcrumbs 
         $this->breadcrumbs->push('Dashboard', '/dashboard');
         $this->breadcrumbs->unshift('Home', '/');            
         $data['breadcrumbs'] = $this->breadcrumbs->show();
+        $data['page_url'] = site_url($this->url);
 
         $this->load->view('index', $data);
     }
+
+    public function search_asn($search=false){
+
+        // table props, change this base on table props
+        $data['table_head'] = array(
+            'nip' => 'NIP',
+            'full_name' => 'Nama',
+            'position' => 'Jabatan',
+            'agency_name' => 'Instansi'
+        );
+
+        if ($search!=false) {
+            $fetch['like'] = array('name' => array('nip', 'full_name'), 'key' => $search);
+            // SELECT o.*, (SELECT s.status FROM asset_status s WHERE s.officer_id=o.id 
+            // ORDER BY s.date_created DESC LIMIT 1) as statusBebas FROM officers o
+
+            $fetch['select'] = array('id', 'nip', 'full_name', 'position');
+            $fetch['select_join'] = array(
+                'a.name as agency_name',
+                '(SELECT s.status FROM asset_status s WHERE s.officer_id=officers.id 
+                ORDER BY s.date_created DESC LIMIT 1) as status_penguasaan'
+            );
+            $fetch['join'] = array(
+                array(
+                    "table" => "agencies a",
+                    "on" => "officers.agency_id = a.id",
+                    "join" => "left",
+
+                )
+            );
+            $fetch['where'] = [];
+            if ($this->session->level != 1) array_push($fetch['where'], array('officers.agency_id' => $this->session->agency_id));
+            return $this->m_officers->fetch($fetch);
+        }else{
+            return false;
+        }
+        
+    }
+
 
     public function count_asset(){
         $fetch['select'] = array('*');

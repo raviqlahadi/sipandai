@@ -20,7 +20,7 @@ class Table_template
         ";
     }
 
-    public function action_dropdown_officer($url, $id, $print=false, $edit_url = null)
+    public function action_dropdown_officer($url, $id, $print=false,  $dashboard=false, $edit_url = null)
     {
         $modal = '';
         if($print){
@@ -60,6 +60,14 @@ class Table_template
         } else {
             $edit = " <a class='dropdown-item' href='" . $url . "/edit/" . $id . "'>Edit</a>";
         }
+
+        if (!$dashboard) {
+            $link = " <hr>
+                    " . $edit . "
+                    <a class='dropdown-item text-danger' href='" . $url . "/delete/" . $id . "'>Delete</a>";
+        } else {
+            $link = '';
+        }
         
         return "
             <div class='dropdown'>
@@ -67,10 +75,10 @@ class Table_template
                     Action
                 </button>
                 <div class='dropdown-menu' aria-labelledby='dropdownMenuButton'>
-                    " . $action . "
-                    <hr>
-                    " . $edit . "
-                    <a class='dropdown-item text-danger' href='" . $url . "/delete/" . $id . "'>Delete</a>
+                    " . $action . " 
+                    " . $link . " 
+                   
+                   
             </div>
             ".$modal."
         ";
@@ -85,6 +93,7 @@ class Table_template
             }else{
                 $edit_delete = "";
             }
+            $url = site_url('asset');
             return "
             <div class='dropdown'>
                 <button class='btn btn-primary btn-sm dropdown-toggle' type='button' id='dropdownMenuButton' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>

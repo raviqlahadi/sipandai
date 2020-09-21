@@ -92,6 +92,29 @@
         if($perihal!='') $perihal = $perihal.' dan ';
         $print = str_replace('PERIHAL', $perihal, $print);
 
+        //TANGGAL
+        function get_tanggal($tanggal)
+        {
+            $bulan = array(
+                1 =>   'Januari',
+                'Februari',
+                'Maret',
+                'April',
+                'Mei',
+                'Juni',
+                'Juli',
+                'Agustus',
+                'September',
+                'Oktober',
+                'November',
+                'Desember'
+            );
+            $split = explode('-', $tanggal);
+            return $split[2] . ' ' . $bulan[(int)$split[1]] . ' ' . $split[0];
+        }
+        $tanggal = get_tanggal(date('Y-m-d'));
+        $print = str_replace('TANGGAL', $tanggal, $print);
+
         //TEBUSAN
         $tebusan_item = "<div id='tebusan'>
         1. Walikota Kota Kendari (sebagai laporan) di Kendari <br>

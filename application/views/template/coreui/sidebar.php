@@ -4,7 +4,7 @@
             <h3>SI<span style="font-weight: 100;">PANDAI</span></h3>
         </div>
         <div class="c-sidebar-brand-minimized">
-            <h3>C</h3>
+            <h3>S</h3>
         </div>
 
     </div>

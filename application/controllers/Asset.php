@@ -33,19 +33,23 @@ class Asset extends MY_Controller
         
         // table props, change this base on table props
         $data['table_head'] = array(
-            'asset_code' => 'Kode Aset', 
+            'asset_code' => 'Kode Aset',
             'type' => 'Jenis',
             'brand' => "Merk",
+            'police_number' => "Nomor Polisi",
+            'chassis_number' => "Nomor Rangka",
+            'price' => "Harga",
+            'year_purchased' => "Tahun Pembelian",
             'agency_name' => 'OPD'
         );
 
         $search = ($this->input->get('search') != null ) ? $this->input->get('search') : false ;        
 
         if($search){
-            $fetch['like'] = array('name'=>array('asset_code','type','brand'), 'key'=>$search);
+            $fetch['like'] = array('name'=>array('asset_code','type','brand','police_number'), 'key'=>$search);
         }
-
-        $fetch['select'] = array('id','asset_code', 'type', 'brand');
+        
+        $fetch['select'] = array('*');
         $fetch['select_join'] = array(
             'a.name as agency_name',
             's1.status as asset_status',
@@ -199,12 +203,15 @@ class Asset extends MY_Controller
 
         //select option
         $this->load->model('m_officers');
-        $temp_officers = $this->m_officers->fetch(array('select' => array('id', 'full_name')));
+        $fetch_of['select'] = array('id', 'nip', 'full_name', 'position');
+        $fetch_of['where'] = [];
+        if ($this->session->level != 1) array_push($fetch_of['where'], array('officers.agency_id' => $this->session->agency_id));
+        $temp_officers = $this->m_officers->fetch($fetch_of);
         $officers = array();
         foreach ($temp_officers as $key => $value) {
            array_push($officers, array(
                'id'=>$value->id,
-               'name'=>$value->full_name
+               'name'=>$value->nip.' - '.$value->full_name
            ));
         }
         $data['officers_select'] = $officers;
@@ -213,10 +220,6 @@ class Asset extends MY_Controller
             array(
                 'id' => 'digunakan',
                 'name' => 'Digunakan'
-            ),
-            array(
-                'id' => 'verifikasi',
-                'name' => 'Verifikasi'
             ),
             array(
                 'id' => 'kembali',
@@ -230,7 +233,7 @@ class Asset extends MY_Controller
                 'name' => 'Digunakan'
             ),
             array(
-                'id' => 'verifikasi',
+                'id' => 'kembali',
                 'name' => 'Kembali'
             )
         );
@@ -260,6 +263,7 @@ class Asset extends MY_Controller
         }
 
         $data['page_url'] = site_url($this->url);
+        $data['view_library'] = array('select2');
         $this->load->view('index', $data);
     }
 

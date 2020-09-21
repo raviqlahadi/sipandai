@@ -18,6 +18,7 @@ class Officer extends MY_Controller
         
         
         $this->load->model('m_officers');
+        $this->load->model('m_assets');
         
         
     }
@@ -67,7 +68,7 @@ class Officer extends MY_Controller
         if ($this->session->level != 1) array_push($fetch['where'], array('officers.agency_id' => $this->session->agency_id));
         $data['table_content'] = $this->m_officers->fetch($fetch);
         $total_records = $this->m_officers->fetch($fetch,true);
-
+        
         //pagination config
         $pagination['base_url'] = site_url($this->url) . '/index';
         $pagination['limit_per_page'] = $limit_per_page;
@@ -98,7 +99,78 @@ class Officer extends MY_Controller
         $this->load->view('index', $data);
     }
 
-    
+    public function asset($officer_id){
+        //page config
+      
+
+        // table props, change this base on table props
+        $data['table_head'] = array(
+            'asset_code' => 'Kode Aset',
+            'type' => 'Jenis',
+            'brand' => "Merk",
+            'police_number' => "Nomor Polisi",
+            'chassis_number' => "Nomor Rangka",
+            'price' => "Harga",
+            'year_purchased' => "Tahun Pembelian",
+            'agency_name' => 'OPD'
+        );
+
+        $search = ($this->input->get('search') != null) ? $this->input->get('search') : false;
+
+        if ($search) {
+            $fetch['like'] = array('name' => array('asset_code', 'type', 'brand', 'police_number'), 'key' => $search);
+        }
+
+        $fetch['select'] = array('*');
+        $fetch['select_join'] = array(
+            'a.name as agency_name',
+            's1.status as asset_status',
+            'o.full_name as officer_name'
+        );
+        $fetch['join'] = array(
+            array(
+                "table" => "agencies a",
+                "join" => "left",
+                "on" => "a.id = assets.agency_id"
+            ),
+            array(
+                "table" => "asset_status s1",
+                "join" => "left",
+                "on" => "s1.asset_id = assets.id"
+            ),
+            array(
+                "table" => "officers o",
+                "join" => "left",
+                "on" => "o.id = s1.officer_id"
+            )
+
+        );
+        $fetch['where'] =[];
+       
+        array_push($fetch['where'], array('o.id' => $officer_id));
+        //var_dump($this->m_assets->fetch($fetch,false,true));
+        $data['table_content'] = $this->m_assets->fetch($fetch);
+        //$total_records = $this->m_assets->fetch($fetch, true);
+
+
+        
+
+
+        //breadcrumbs config
+        $this->breadcrumbs->push('Asset', '/asset');
+        $this->breadcrumbs->unshift('Admin', '/');
+
+
+        //page properties        
+        $data['breadcrumbs'] = $this->breadcrumbs->show();
+        $data['page_title'] = '<strong>Asset</strong> Management';
+        $data['page_content'] = 'page/asset/index';
+        $data['page_current'] = 'page/asset';
+        $data['page_url'] = site_url($this->url);
+
+        $this->load->view('index', $data);
+    }
+
     public function create()
     {
         

@@ -41,7 +41,7 @@
 
                                 </div>
                                 <?php
-                                if ($pagination != false) {
+                                if (isset($pagination) && $pagination != false) {
                                     echo  '<div class="card-footer">
                                                     ' . $pagination . '
                                                 </div>';

@@ -87,9 +87,9 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 
 //Costume
 
-define('APP_NAME', 'Core Boilerplate');
+define('APP_NAME', 'SIPANDAI');
 define('APP_AUTHOR', 'Raviq Lahadi');
-define('APP_DESC', 'Boilerplate For Rapid Develompment');
+define('APP_DESC', 'Sistem Informasi yang dapat membantu menvalidasi status penguasaan aset bmd oleh ASN');
 define('FAVICON_IMAGE', 'assets/favicon.ico');
 define('ICON_IMAGE', 'assets/logo/coreigniter.png');
 define('LOGO_PATH', 'assets/logo_agencies');
