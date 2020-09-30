@@ -18,6 +18,12 @@ class M_status extends MY_Model
         return $this->fetch_db($data, $count, $compiled);
     }
 
+    public function fetch_new($data, $count = false, $compiled = false)
+    {
+        return $this->new_fetch_db($data, $count, $compiled);
+    }
+
+
     public function get()
     {
         $query = $this->db->get($this->table);

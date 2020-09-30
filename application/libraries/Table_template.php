@@ -102,7 +102,7 @@ class Table_template
                 <div class='dropdown-menu' aria-labelledby='dropdownMenuButton'>
                     <a class='dropdown-item' href='" . $url . "/status/" . $id . "'>Update status</a>
                     <hr>
-                    <a class='dropdown-item' href='" . $url . "/detail/" . $id . "'>Detail</a>
+                    
                     ". $edit_delete. "
             </div>
         ";

@@ -36,6 +36,11 @@
                                                             if(isset($table_content) && $table_content!=null){
                                                                $this->load->view('page/dashboard/table');
                                                             }
+                                                            echo "<hr class='mt-5'>";
+                                                            echo "<p><strong>Aset yang sedang digunakan:</strong></p  >";
+                                                            if (isset($list_asset) && $list_asset != null) {
+                                                                $this->load->view('page/dashboard/table_asset');
+                                                            }
                                                          ?>
                                                      </div>
                                                  </div>
